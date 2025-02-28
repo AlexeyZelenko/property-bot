@@ -3,21 +3,41 @@ import { getProperties } from '../services/propertyService.js';
 import {
   getApartmentOptionsKeyboard,
   getHouseOptionsKeyboard,
-  getCommercialOptionsKeyboard,
   getPropertyTypeKeyboard,
-  getTransactionTypeKeyboard
+  getTransactionTypeKeyboard, getMainMenuKeyboard
 } from '../utils/keyboards.js';
+
 
 export const handleCallback = async (callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
   const messageId = callbackQuery.message.message_id;
   const data = callbackQuery.data;
 
+  const mapProperties = {
+    "apartments": "Квартири",
+    "houses": "Будинки",
+    "rent": "Оренда",
+    "sell": "Продаж",
+    "exchange": "Обмін",
+    "daily": "Подобово",
+  };
+
+  const replaceProperties = (str) => {
+    for (const key in mapProperties) {
+      str = str.replace(new RegExp(key, 'g'), mapProperties[key]);
+    }
+    return str;
+  }
+
   console.log(`📩 Отримано callback: ${data} (чат: ${chatId})`);
 
+  if (data === "back_to_main") {
+    await editMessage(chatId, messageId, "🔙 Повертаємось в головне меню", getMainMenuKeyboard());
+  }
+
   // Вибір типу нерухомості
-  if (['apartments', 'houses', 'commercial'].includes(data)) {
-    console.log(`🏠 Вибрано тип нерухомості: ${data}`);
+  if (['apartments', 'houses'].includes(data)) {
+    console.log(`🏠 Вибрано тип нерухомості: ${replaceProperties(data)}`);
     return await editMessage(chatId, messageId, 'Оберіть тип угоди:', {
       reply_markup: getTransactionTypeKeyboard(data),
     });
@@ -44,9 +64,6 @@ export const handleCallback = async (callbackQuery) => {
       case 'houses':
         keyboard = getHouseOptionsKeyboard(transactionType);
         break;
-      case 'commercial':
-        keyboard = getCommercialOptionsKeyboard(transactionType);
-        break;
       default:
         console.warn(`⚠️ Помилка: невідома категорія (${propertyType})`);
         return await answerCallbackQuery(callbackQuery.id, 'Помилка: невідома категорія');
@@ -56,7 +73,7 @@ export const handleCallback = async (callbackQuery) => {
     return await editMessage(
         chatId,
         messageId,
-        `Оберіть варіант у категорії "${propertyType.toUpperCase()}" - ${transactionType.toUpperCase()}:`,
+        `Оберіть варіант у категорії "${replaceProperties(propertyType)}" - ${replaceProperties(transactionType)}:`,
         { reply_markup: keyboard }
     );
   }
@@ -65,7 +82,7 @@ export const handleCallback = async (callbackQuery) => {
   if (parts.length === 3) {
     const [propertyType, transactionType, subtype] = parts;
 
-    console.log(`🔍 Вибрано підтип: ${subtype} (${propertyType} - ${transactionType})`);
+    console.log(`🔍 Вибрано підтип: ${replaceProperties(subtype)} (${replaceProperties(propertyType)} - ${transactionType})`);
 
     if (!subtype) {
       console.warn('⚠️ Помилка: відсутній підтип');
@@ -75,12 +92,12 @@ export const handleCallback = async (callbackQuery) => {
     const properties = await getProperties(propertyType, transactionType, subtype) || [];
 
     if (properties.length === 0) {
-      console.warn(`❌ Немає доступних варіантів для ${subtype}`);
+      console.warn(`❌ Немає доступних варіантів для ${replaceProperties(subtype)}`);
       return await answerCallbackQuery(callbackQuery.id, 'На жаль, зараз немає доступних варіантів');
     }
 
     const propertyList = formatPropertyList(properties);
-    const messageText = `✅ Знайдено ${properties.length} варіантів для ${subtype} кімнат:\n\n${propertyList}`;
+    const messageText = `✅ Знайдено ${properties.length} варіантів для ${replaceProperties(subtype)} кімнат:\n\n${propertyList}`;
 
     console.log(messageText);
 
@@ -90,7 +107,7 @@ export const handleCallback = async (callbackQuery) => {
 
 const formatPropertyList = (properties, limit = 5) => {
   return properties
-    .slice(0, limit)
-    .map((p, index) => `${index + 1}. ${p.address.area.name} - ${p.price}$, ${p.apartmentArea.totalArea}м²`)
-    .join('\n');
+      .slice(0, limit)
+      .map((p, index) => `${index + 1}. ${p.address.area.name} - ${p.price}$, ${p.apartmentArea.totalArea}м²`)
+      .join('\n');
 };

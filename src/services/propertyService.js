@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
 
 export const getProperties = async (category, type, rooms = null) => {
@@ -44,23 +44,3 @@ export const getProperties = async (category, type, rooms = null) => {
     console.log("🔚 [END] Запрос завершен");
   }
 };
-
-
-const getSubcollectionDocs = async (parentDocPath) => {
-  try {
-    const subcollectionRef = collection(db, parentDocPath);
-    const querySnapshot = await getDocs(subcollectionRef);
-
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error("Ошибка при получении документов:", error);
-  }
-};
-
-getSubcollectionDocs("properties").then(console.log);
-
-
-

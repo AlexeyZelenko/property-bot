@@ -2,9 +2,11 @@ import { sendMessage } from '../services/telegramService.js';
 import { getMainMenuKeyboard, getPropertyTypeKeyboard } from '../utils/keyboards.js';
 
 export const handleMessage = async (message) => {
+  console.log('📩 handleMessage called with:', message);
   const chatId = message.chat.id;
   const text = message.text;
 
+  console.log("text", text)
   switch (text) {
     case '/start':
       return await sendMessage(chatId, 

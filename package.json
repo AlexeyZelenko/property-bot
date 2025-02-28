@@ -9,8 +9,8 @@
     "deploy": "npm run deploy:build && npm run deploy:push && npm run deploy:run",
     "deploy:build": "docker build -t gcr.io/cherkasy-apartment-bot/telegram-bot .",
     "deploy:push": "docker push gcr.io/cherkasy-apartment-bot/telegram-bot",
-    "deploy:run": "gcloud run deploy telegram-bot --image gcr.io/cherkasy-apartment-bot/telegram-bot --platform managed --allow-unauthenticated --region us-central1 --set-env-vars NODE_ENV=production",
-    "logs": "gcloud logging tail \"resource.type=cloud_run_revision AND resource.labels.service_name=telegram-bot\"",
+    "deploy:run": "gcloud run deploy telegram-bot --image gcr.io/cherkasy-apartment-bot/telegram-bot --platform managed --allow-unauthenticated --region us-central1 --set-env-vars NODE_ENV=production,TELEGRAM_TOKEN=7242436032:AAFfBgpOK3rKF81amx64KuGld7RiCc7p1tU --set-secrets GOOGLE_APPLICATION_CREDENTIALS=FIREBASE_CREDENTIALS:latest",
+    "logs": "gcloud beta logging tail \"resource.type=cloud_run_revision AND resource.labels.service_name=telegram-bot\"\n",
     "set-env": "gcloud run services update telegram-bot --update-env-vars"
   },
   "dependencies": {

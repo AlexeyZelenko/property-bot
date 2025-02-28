@@ -37,10 +37,11 @@ gcloud run deploy telegram-bot \
   --platform managed \
   --allow-unauthenticated \
   --region us-central1 \
-  --set-env-vars "TELEGRAM_TOKEN=${TELEGRAM_TOKEN},NODE_ENV=production"
+  --set-env-vars "TELEGRAM_TOKEN=7242436032:AAFfBgpOK3rKF81amx64KuGld7RiCc7p1tU,NODE_ENV=production" \
+  --set-secrets GOOGLE_APPLICATION_CREDENTIALS=FIREBASE_CREDENTIALS:latest
 
 echo "✅ Deployment completed successfully!"
 echo "📝 Streaming logs (Ctrl+C to exit)..."
-gcloud logging tail "resource.type=cloud_run_revision AND resource.labels.service_name=telegram-bot"
+#gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=telegram-bot" --limit 1 --format json
 
 read -p "Press Enter to exit..."
